@@ -4,6 +4,10 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ifnotnil/daemon)](https://goreportcard.com/report/github.com/ifnotnil/daemon)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/ifnotnil/daemon)](https://pkg.go.dev/github.com/ifnotnil/daemon)
 
+Install:
+```shell
+go get -u github.com/ifnotnil/daemon
+```
 
 The daemon package encapsulates the core functionality required for running an application as a daemon or service, and it ensures a graceful shutdown when stop conditions are met.
 Stop conditions:
