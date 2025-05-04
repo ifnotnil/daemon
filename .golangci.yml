@@ -1,0 +1,116 @@
+# yaml-language-server: https://raw.githubusercontent.com/golangci/golangci-lint/refs/heads/main/jsonschema/golangci.jsonschema.json
+
+# https://golangci-lint.run/usage/configuration/
+# https://golangci-lint.run/usage/linters/
+# https://ldez.github.io/blog/2025/03/23/golangci-lint-v2/
+
+version: "2"
+run:
+  go: "1.24"
+  modules-download-mode: readonly
+  issues-exit-code: 1
+  tests: true
+output:
+  formats:
+    text:
+      path: stderr
+      print-linter-name: true
+      print-issued-lines: true
+      colors: true
+linters:
+  default: all
+
+  disable:
+    - cyclop
+    - depguard
+    - dupl
+    - exhaustive
+    - exhaustruct
+    - funlen
+    - gochecknoglobals
+    - gocognit
+    - godot
+    - godox
+    - lll
+    - mnd
+    - nlreturn
+    - nonamedreturns
+    - perfsprint
+    - tagliatelle
+    - testpackage
+    - unparam
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - funcorder
+    - containedctx
+    - usetesting
+    - contextcheck
+
+  settings:
+    staticcheck:
+      checks: ["all", "-QF1008"]
+    nlreturn:
+      block-size: 3
+    nolintlint:
+      allow-unused: true
+    paralleltest:
+      ignore-missing: true
+      ignore-missing-subtests: true
+    revive:
+      severity: error
+      enable-all-rules: false
+      rules:
+        - name: unused-parameter
+          disabled: true
+    tagliatelle:
+      case:
+        rules:
+          avro: snake
+          bson: camel
+          json: snake
+          mapstructure: kebab
+          xml: camel
+          yaml: camel
+        use-field-name: true
+
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - std-error-handling
+    rules:
+      - linters:
+          - dupl
+          - err113
+          - gochecknoglobals
+          - goconst
+          - maintidx
+        path: (.+)_test\.go
+      - linters:
+          - govet
+        path: (.+)_test\.go
+        text: 'fieldalignment:'
+      - linters:
+          - dupl
+          - err113
+          - gochecknoglobals
+          - goconst
+          - maintidx
+        path: internal/tesatingx/testdata
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+
+# https://golangci-lint.run/usage/formatters/
+# https://golangci-lint.run/usage/configuration/#formatters-configuration
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    #- golines
+  exclusions:
+    generated: lax
