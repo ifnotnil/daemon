@@ -62,4 +62,3 @@ Using the `WithShutdownGraceDuration` option you can set the grace period of shu
 
 ### Fatal errors channel
 Daemon provides an error channel `FatalErrorsChannel() chan<- error` that can be used downstream to push errors that are considered catastrophic into it. Once an error received in this channel the daemon struct will initiate the graceful shutdown process.
-
