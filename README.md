@@ -22,7 +22,11 @@ Example:
 
 ```golang
 func main() {
-	d := daemon.Start(context.Background())
+	d := daemon.Start(
+		context.Background(),
+		daemon.WithSignalsNotify(os.Interrupt, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM),
+		daemon.WithShutdownGraceDuration(5*time.Second),
+	)
 
 	ctx := d.CTX() // This ctx should be provided to the rest of the code
 
