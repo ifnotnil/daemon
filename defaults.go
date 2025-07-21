@@ -4,13 +4,12 @@ import (
 	"log/slog"
 	"os"
 	"syscall"
-	"time"
 )
 
 const (
 	defaultMaxSignalCount               = 0
 	defaultFatalErrorsChannelBufferSize = 10
-	defaultShutdownTimeout              = 2 * time.Second
+	defaultShutdownTimeout              = 0
 	defaultImmediateTerminationExitCode = 2
 )
 

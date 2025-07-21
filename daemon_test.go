@@ -86,6 +86,36 @@ func TestParentContextCancelled(t *testing.T) {
 	d.Wait()
 }
 
+func TestShutdownCallbacks(t *testing.T) {
+	s := newMockstdAPI(t)
+	s.EXPECT().SignalNotify(mock.Anything, mock.Anything).Once()
+	s.EXPECT().SignalStop(mock.Anything).Once()
+
+	// we specifically want a context that will not get cancelled at the end of the test
+	d := Start(
+		context.Background(),
+		WithLogger(logger(t)),
+		withSTDAPI(s),
+	)
+
+	// slow shutdown
+	m := mock.Mock{}
+	defer m.AssertExpectations(t)
+	m.Test(t)
+
+	m.On("shutdown_1").Once()
+	m.On("shutdown_2").Once()
+	m.On("shutdown_3").Once()
+
+	d.OnShutDown(func(_ context.Context) { m.MethodCalled("shutdown_1") })
+	d.OnShutDown(func(_ context.Context) { m.MethodCalled("shutdown_2") })
+	d.OnShutDown(func(_ context.Context) { m.MethodCalled("shutdown_3") })
+
+	d.ShutDown()
+
+	d.Wait()
+}
+
 func TestShutdownTimeoutExceeded(t *testing.T) {
 	s := newMockstdAPI(t)
 	s.EXPECT().SignalNotify(mock.Anything, mock.Anything).Once()
