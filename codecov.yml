@@ -6,6 +6,7 @@ codecov:
 
 ignore:
   - "examples" # examples
+  - "std.go"
 
 # https://docs.codecov.com/docs/pull-request-comments
 comment:

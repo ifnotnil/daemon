@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"os/signal"
 	"sync"
 	"time"
 )
@@ -28,9 +27,9 @@ type config struct {
 	fatalErrorsChannelBufferSize int
 	shutdownTimeout              time.Duration
 	logger                       *slog.Logger
-	exitFn                       func(code int)
 	logSignal                    func(logger *slog.Logger, sig os.Signal)
 	logFatalError                func(logger *slog.Logger, err error)
+	stdAPI                       stdAPI
 }
 
 // The Daemon struct encapsulates the core functionality required for running an application as a daemon or service, and it ensures a graceful shutdown when stop conditions are met.
@@ -69,9 +68,9 @@ func Start(parentCTX context.Context, opts ...DaemonConfigOption) *Daemon {
 		fatalErrorsChannelBufferSize: defaultFatalErrorsChannelBufferSize,
 		shutdownTimeout:              defaultShutdownTimeout,
 		logger:                       slog.New(slog.DiscardHandler),
-		exitFn:                       os.Exit,
 		logSignal:                    logSignal,
 		logFatalError:                logFatalError,
+		stdAPI:                       std{},
 	}
 
 	for _, o := range opts {
@@ -79,7 +78,7 @@ func Start(parentCTX context.Context, opts ...DaemonConfigOption) *Daemon {
 	}
 
 	signalCh := make(chan os.Signal, cnf.maxSignalCount)
-	signal.Notify(signalCh, cnf.signalsNotify...)
+	cnf.stdAPI.SignalNotify(signalCh, cnf.signalsNotify...)
 
 	ctx, ctxCancel := context.WithCancel(parentCTX)
 	o := &Daemon{
@@ -125,6 +124,8 @@ func (o *Daemon) shutDown() {
 	// cancel ctx
 	o.ctxCancel()
 
+	o.config.stdAPI.SignalStop(o.signalCh)
+
 	close(o.done)
 
 	o.config.logger.InfoContext(o.parentCTX, "shutdown completed")
@@ -156,7 +157,8 @@ func (o *Daemon) start() {
 				o.config.logSignal(o.config.logger, sig)
 				if o.config.maxSignalCount > 0 && sigReceived >= o.config.maxSignalCount {
 					o.config.logger.Error("max number of signal received, terminating immediately")
-					o.config.exitFn(defaultImmediateTerminationExitCode)
+					o.config.stdAPI.OSExit(defaultImmediateTerminationExitCode)
+					return
 				}
 				o.ShutDown()
 
@@ -244,4 +246,10 @@ func runWithMutex(ctx context.Context, m *sync.Mutex, fns []func(context.Context
 			return
 		}
 	}
+}
+
+type stdAPI interface {
+	SignalStop(c chan<- os.Signal)
+	SignalNotify(c chan<- os.Signal, sig ...os.Signal)
+	OSExit(code int)
 }

@@ -58,8 +58,8 @@ env:
 .PHONY: checks
 checks: vet staticcheck gofumpt goimports golangci-lint
 
-.PHONY: ci-format
-ci-format: golangci-lint-fmt
+.PHONY: ci-gen-n-format
+ci-gen-n-format: mockery golangci-lint-fmt
 	@./scripts/git-check-dirty
 
 .PHONY: ci-mod

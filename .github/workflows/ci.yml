@@ -58,15 +58,26 @@ jobs:
       run: make ci-mod
 
     - name: format and check
-      run: make ci-format
+      run: make ci-gen-n-format
+
+    - name: staticcheck
+      run: make staticcheck
 
     - name: golangci-lint
       run: make golangci-lint
 
     - name: test
-      run: make test
+      run: |
+        go test -timeout 30s -race -coverprofile=coverage.txt -covermode=atomic ./...
 
-  test-macos-windows:
+    # https://github.com/codecov/codecov-action
+    - name: upload coverage reports to codecov
+      uses: codecov/codecov-action@v5
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      if: matrix.go-version == '1.24'
+
+  test-mac-win:
     name: Tests
     strategy:
       matrix:
