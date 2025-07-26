@@ -15,7 +15,8 @@ import (
 func newMockstdAPI(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *mockstdAPI {
+},
+) *mockstdAPI {
 	mock := &mockstdAPI{}
 	mock.Mock.Test(t)
 

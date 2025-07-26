@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"syscall"
@@ -13,16 +14,16 @@ const (
 	defaultImmediateTerminationExitCode = 2
 )
 
-func logFatalError(logger *slog.Logger, err error) {
-	logger.Error("fatal error received", slog.String("error", err.Error()))
+func logFatalError(ctx context.Context, logger *slog.Logger, err error) {
+	logger.ErrorContext(ctx, "fatal error received", slog.String("error", err.Error()))
 }
 
-func logSignal(logger *slog.Logger, sig os.Signal) {
+func logSignal(ctx context.Context, logger *slog.Logger, sig os.Signal) {
 	signal := slog.String("signal", sig.String())
 	signalCode := slog.Attr{}
 	if sigInt, ok := sig.(syscall.Signal); ok {
 		signalCode = slog.Int("signalCode", int(sigInt))
 	}
 
-	logger.Warn("signal received", signal, signalCode)
+	logger.WarnContext(ctx, "signal received", signal, signalCode)
 }

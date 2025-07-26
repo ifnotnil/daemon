@@ -46,6 +46,7 @@ linters:
     - containedctx
     - usetesting
     - contextcheck
+    - wsl_v5
 
   settings:
     staticcheck:
