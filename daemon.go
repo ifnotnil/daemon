@@ -14,6 +14,8 @@ const daemonCTXKey = daemonCTXKeyType("daemonCTXKey")
 
 type OnShutDownCallBack func(context.Context)
 
+// CancelCTX is a shutdown callback that cancels the daemon's context when called.
+// It extracts the daemon instance from the provided context and calls its ctxCancel function.
 var CancelCTX OnShutDownCallBack = func(ctx context.Context) {
 	a := ctx.Value(daemonCTXKey)
 	if d, is := a.(*Daemon); is {
@@ -27,8 +29,8 @@ type config struct {
 	fatalErrorsChannelBufferSize int
 	shutdownTimeout              time.Duration
 	logger                       *slog.Logger
-	logSignal                    func(logger *slog.Logger, sig os.Signal)
-	logFatalError                func(logger *slog.Logger, err error)
+	logSignal                    func(ctx context.Context, logger *slog.Logger, sig os.Signal)
+	logFatalError                func(ctx context.Context, logger *slog.Logger, err error)
 	stdAPI                       stdAPI
 }
 
@@ -61,6 +63,8 @@ type Daemon struct {
 // CTX returns the cancelable ctx that will get cancel when the daemon initiates it's shutdown process.
 func (o *Daemon) CTX() context.Context { return o.ctx }
 
+// Start creates and starts a new daemon with the given parent context and configuration options.
+// It returns a configured daemon instance that manages graceful shutdown based on signals, fatal errors, or parent context cancellation.
 func Start(parentCTX context.Context, opts ...DaemonConfigOption) *Daemon {
 	cnf := config{
 		signalsNotify:                defaultSignals,
@@ -110,6 +114,7 @@ func (o *Daemon) OnShutDown(f ...func(context.Context)) {
 func (o *Daemon) shutDown() {
 	o.config.logger.InfoContext(o.ctx, "starting graceful shutdown")
 
+	// add the daemon to ctx in case the CancelCTX shutdown callback is used.
 	pCTX := context.WithValue(o.parentCTX, daemonCTXKey, o)
 
 	// on shutdown, run every shutdown callback with parent ctx and a separate timeout if configured.
@@ -154,9 +159,9 @@ func (o *Daemon) start() {
 			// Stop condition (A) signal received.
 			case sig := <-o.signalCh:
 				sigReceived++
-				o.config.logSignal(o.config.logger, sig)
+				o.config.logSignal(o.ctx, o.config.logger, sig)
 				if o.config.maxSignalCount > 0 && sigReceived >= o.config.maxSignalCount {
-					o.config.logger.Error("max number of signal received, terminating immediately")
+					o.config.logger.ErrorContext(o.ctx, "max number of signal received, terminating immediately")
 					o.config.stdAPI.OSExit(defaultImmediateTerminationExitCode)
 					return
 				}
@@ -164,7 +169,7 @@ func (o *Daemon) start() {
 
 			// Stop condition (B) fatal error received.
 			case err := <-o.fatalErrorsCh:
-				o.config.logFatalError(o.config.logger, err)
+				o.config.logFatalError(o.ctx, o.config.logger, err)
 				o.ShutDown()
 
 			// stop the loop
@@ -183,7 +188,7 @@ func (o *Daemon) start() {
 			if err != nil {
 				s = err.Error()
 			}
-			o.config.logger.Error("parent context got canceled", slog.String("error", s))
+			o.config.logger.ErrorContext(o.ctx, "parent context got canceled", slog.String("error", s))
 			o.ShutDown()
 			return
 
