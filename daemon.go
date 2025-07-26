@@ -114,6 +114,7 @@ func (o *Daemon) OnShutDown(f ...func(context.Context)) {
 func (o *Daemon) shutDown() {
 	o.config.logger.InfoContext(o.ctx, "starting graceful shutdown")
 
+	// add the daemon to ctx in case the CancelCTX shutdown callback is used.
 	pCTX := context.WithValue(o.parentCTX, daemonCTXKey, o)
 
 	// on shutdown, run every shutdown callback with parent ctx and a separate timeout if configured.
