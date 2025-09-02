@@ -7,7 +7,7 @@ go 1.24.0
 
 require (
 	github.com/golangci/golangci-lint/v2 v2.4.0
-	github.com/vektra/mockery/v3 v3.5.3
+	github.com/vektra/mockery/v3 v3.5.4
 	golang.org/x/tools v0.36.0
 	honnef.co/go/tools v0.6.1
 	mvdan.cc/gofumpt v0.8.0
