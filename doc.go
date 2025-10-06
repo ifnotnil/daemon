@@ -25,7 +25,7 @@
 //		httpServer := NewHTTPModule(ctx, serviceA) // starts its own go routine
 //		consumers := InitQueueConsumer(ctx) // starts its own go routine
 //
-//		d.OnShutDown(
+//		d.Defer(
 //			httpServer.ShutDown,
 //			consumers.Stop,
 //			serviceA.Stop,
@@ -38,11 +38,11 @@
 // Context:
 // The context provided by the daemon struct .CTX() should be passed downstream to the rest of the code.
 // It will get cancelled by default after the shutdown callbacks are done or if it configured as a shutdown callback
-// by passing daemon.CancelCTX in the OnShutDown() function.
+// by passing daemon.CancelCTX in the Defer() function.
 //
 // Shutdown callbacks:
-// Using the daemon function OnShutDown(f ...func(context.Context)) you can register callback functions that will be called
-// once the graceful shutdown is initiated. The context that is given to each shutdown callback is not the same with .CTX().
+// Using the daemon function Defer(f ...func(context.Context)) you can register callback functions that will be called
+// (in LIFO order) once the graceful shutdown is initiated. The context that is given to each shutdown callback is not the same with .CTX().
 // It will be the parentCTX with a separate timeout (shutdown grace period) depending on the configuration.
 //
 // Fatal errors channel:

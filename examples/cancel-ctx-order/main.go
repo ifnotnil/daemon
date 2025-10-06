@@ -19,10 +19,10 @@ func main() {
 	httpServer := NewHTTPModule(ctx)
 	httpServer.Start(d.FatalErrorsChannel()) // starts its own go routine
 
-	d.OnShutDown(
-		httpServer.ShutDown, // first shutdown http server
+	d.Defer(
+		db.Close,            // finally, close db
 		daemon.CancelCTX,    // then cancel the ctx
-		db.Close,            // then close db
+		httpServer.ShutDown, // first shutdown http server
 	)
 
 	d.Wait()

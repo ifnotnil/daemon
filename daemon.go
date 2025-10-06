@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"slices"
 	"sync"
 	"time"
 )
@@ -105,10 +106,26 @@ func Start(parentCTX context.Context, opts ...DaemonConfigOption) *Daemon {
 
 // OnShutDown appends the functions to be called on shutdown after the context gets cancelled.
 // The provided functions will be called using a non done context with a timeout configured using `WithShutdownGraceDuration`.
+// Shutdown callback functions will be called in the order they are registered (first in first out).
 func (o *Daemon) OnShutDown(f ...func(context.Context)) {
 	o.onShutDownMutex.Lock()
 	defer o.onShutDownMutex.Unlock()
 	o.onShutDown = append(o.onShutDown, f...)
+}
+
+// Defer pushes the functions to be called on shutdown after the context gets cancelled.
+// The provided functions will be called using a non done context with a timeout configured using `WithShutdownGraceDuration`.
+// Shutdown callback functions will be called in the reverse order they are registered (last in first out).
+func (o *Daemon) Defer(f ...func(context.Context)) {
+	o.onShutDownMutex.Lock()
+	defer o.onShutDownMutex.Unlock()
+
+	n := len(f)
+	o.onShutDown = moveRight(o.onShutDown, n)
+
+	for i, fn := range f {
+		o.onShutDown[n-1-i] = fn
+	}
 }
 
 func (o *Daemon) shutDown() {
@@ -246,10 +263,10 @@ func runWithMutex(ctx context.Context, m *sync.Mutex, fns []func(context.Context
 	m.Lock()
 	defer m.Unlock()
 	for _, f := range fns {
-		f(ctx)
 		if ctx.Err() != nil {
 			return
 		}
+		f(ctx)
 	}
 }
 
@@ -257,4 +274,31 @@ type stdAPI interface {
 	SignalStop(c chan<- os.Signal)
 	SignalNotify(c chan<- os.Signal, sig ...os.Signal)
 	OSExit(code int)
+}
+
+func moveRight[S ~[]E, E any](s S, n int) S {
+	if n == 0 {
+		return s
+	}
+
+	s = slices.Grow(s, n)
+
+	// extend the slice length.
+	s = s[:len(s)+n]
+
+	// small optimization for when the initial slice s was a nil/zero length slice.
+	if len(s) == n {
+		return s
+	}
+
+	// move n positions to the right.
+	copy(s[n:], s[:len(s)-n])
+
+	// clean the first n elements.
+	var d E
+	for i := range n {
+		s[i] = d
+	}
+
+	return s
 }
