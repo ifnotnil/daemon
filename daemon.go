@@ -107,6 +107,7 @@ func Start(parentCTX context.Context, opts ...DaemonConfigOption) *Daemon {
 // OnShutDown appends the functions to be called on shutdown after the context gets cancelled.
 // The provided functions will be called using a non done context with a timeout configured using `WithShutdownGraceDuration`.
 // Shutdown callback functions will be called in the order they are registered (first in first out).
+// Deprecated: Use Defer with reverse order instead.
 func (o *Daemon) OnShutDown(f ...func(context.Context)) {
 	o.onShutDownMutex.Lock()
 	defer o.onShutDownMutex.Unlock()
@@ -119,13 +120,7 @@ func (o *Daemon) OnShutDown(f ...func(context.Context)) {
 func (o *Daemon) Defer(f ...func(context.Context)) {
 	o.onShutDownMutex.Lock()
 	defer o.onShutDownMutex.Unlock()
-
-	n := len(f)
-	o.onShutDown = moveRight(o.onShutDown, n)
-
-	for i, fn := range f {
-		o.onShutDown[n-1-i] = fn
-	}
+	o.onShutDown = pushFront(o.onShutDown, f...)
 }
 
 func (o *Daemon) shutDown() {
@@ -274,6 +269,22 @@ type stdAPI interface {
 	SignalStop(c chan<- os.Signal)
 	SignalNotify(c chan<- os.Signal, sig ...os.Signal)
 	OSExit(code int)
+}
+
+//nolint:ireturn
+func pushFront[S ~[]E, E any](s S, elems ...E) S {
+	if len(elems) == 0 {
+		return s
+	}
+
+	n := len(elems)
+	s = moveRight(s, n)
+
+	for i, e := range elems {
+		s[n-1-i] = e
+	}
+
+	return s
 }
 
 //nolint:ireturn
