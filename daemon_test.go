@@ -231,3 +231,233 @@ func withSTDAPI(a stdAPI) DaemonConfigOption {
 		oc.stdAPI = a
 	}
 }
+
+func TestDefer(t *testing.T) {
+	t.Run("single registration", func(t *testing.T) {
+		m := &mock.Mock{}
+		t.Cleanup(func() { m.AssertExpectations(t) })
+		mock.InOrder(
+			m.On("third"),
+			m.On("second"),
+			m.On("first"),
+		)
+
+		d := Daemon{}
+
+		d.Defer(
+			func(ctx context.Context) { m.MethodCalled("first") },
+			func(ctx context.Context) { m.MethodCalled("second") },
+			func(ctx context.Context) { m.MethodCalled("third") },
+		)
+
+		for _, fn := range d.onShutDown {
+			fn(t.Context())
+		}
+	})
+
+	t.Run("double registration", func(t *testing.T) {
+		m := &mock.Mock{}
+		t.Cleanup(func() { m.AssertExpectations(t) })
+		mock.InOrder(
+			m.On("fifth"),
+			m.On("fourth"),
+			m.On("third"),
+			m.On("second"),
+			m.On("first"),
+		)
+
+		d := Daemon{}
+
+		d.Defer(
+			func(ctx context.Context) { m.MethodCalled("first") },
+			func(ctx context.Context) { m.MethodCalled("second") },
+			func(ctx context.Context) { m.MethodCalled("third") },
+		)
+
+		d.Defer(
+			func(ctx context.Context) { m.MethodCalled("fourth") },
+			func(ctx context.Context) { m.MethodCalled("fifth") },
+		)
+
+		for _, fn := range d.onShutDown {
+			fn(t.Context())
+		}
+	})
+}
+
+func TestOnShutdown(t *testing.T) {
+	t.Run("single registration", func(t *testing.T) {
+		m := &mock.Mock{}
+		t.Cleanup(func() { m.AssertExpectations(t) })
+		mock.InOrder(
+			m.On("first"),
+			m.On("second"),
+			m.On("third"),
+		)
+
+		d := Daemon{}
+
+		d.OnShutDown(
+			func(ctx context.Context) { m.MethodCalled("first") },
+			func(ctx context.Context) { m.MethodCalled("second") },
+			func(ctx context.Context) { m.MethodCalled("third") },
+		)
+
+		for _, fn := range d.onShutDown {
+			fn(t.Context())
+		}
+	})
+
+	t.Run("double registration", func(t *testing.T) {
+		m := &mock.Mock{}
+		t.Cleanup(func() { m.AssertExpectations(t) })
+		mock.InOrder(
+			m.On("first"),
+			m.On("second"),
+			m.On("third"),
+			m.On("fourth"),
+			m.On("fifth"),
+		)
+
+		d := Daemon{}
+
+		d.OnShutDown(
+			func(ctx context.Context) { m.MethodCalled("first") },
+			func(ctx context.Context) { m.MethodCalled("second") },
+			func(ctx context.Context) { m.MethodCalled("third") },
+		)
+
+		d.OnShutDown(
+			func(ctx context.Context) { m.MethodCalled("fourth") },
+			func(ctx context.Context) { m.MethodCalled("fifth") },
+		)
+
+		for _, fn := range d.onShutDown {
+			fn(t.Context())
+		}
+	})
+}
+
+func TestMoveRight(t *testing.T) {
+	t.Run("empty slice", func(t *testing.T) {
+		s := []int{}
+		result := moveRight(s, 3)
+		assert.Equal(t, []int{0, 0, 0}, result)
+		assert.Len(t, result, 3)
+	})
+
+	t.Run("shift by zero", func(t *testing.T) {
+		s := []int{1, 2, 3}
+		result := moveRight(s, 0)
+		assert.Equal(t, []int{1, 2, 3}, result)
+	})
+
+	t.Run("shift by one", func(t *testing.T) {
+		s := []int{1, 2, 3}
+		result := moveRight(s, 1)
+		assert.Equal(t, []int{0, 1, 2, 3}, result)
+	})
+
+	t.Run("shift by multiple positions", func(t *testing.T) {
+		s := []int{1, 2, 3}
+		result := moveRight(s, 3)
+		assert.Equal(t, []int{0, 0, 0, 1, 2, 3}, result)
+	})
+
+	t.Run("strings", func(t *testing.T) {
+		s := []string{"a", "b", "c"}
+		result := moveRight(s, 2)
+		assert.Equal(t, []string{"", "", "a", "b", "c"}, result)
+	})
+
+	t.Run("single element", func(t *testing.T) {
+		s := []int{42}
+		result := moveRight(s, 2)
+		assert.Equal(t, []int{0, 0, 42}, result)
+	})
+
+	t.Run("large shift", func(t *testing.T) {
+		s := []int{1, 2}
+		result := moveRight(s, 10)
+		expected := make([]int, 12)
+		expected[10] = 1
+		expected[11] = 2
+		assert.Equal(t, expected, result)
+	})
+}
+
+func TestPushFront(t *testing.T) {
+	t.Run("empty slice", func(t *testing.T) {
+		s := []int{}
+		result := pushFront(s, 1, 2, 3)
+		assert.Equal(t, []int{3, 2, 1}, result)
+	})
+
+	t.Run("empty slice single push", func(t *testing.T) {
+		s := []int{}
+		result := pushFront(s, 1)
+		assert.Equal(t, []int{1}, result)
+	})
+
+	t.Run("prepend to nil slice", func(t *testing.T) {
+		var s []int
+		result := pushFront(s, 1, 2, 3)
+		assert.Equal(t, []int{3, 2, 1}, result)
+	})
+
+	t.Run("prepend single element", func(t *testing.T) {
+		s := []int{1, 2, 3}
+		result := pushFront(s, 4)
+		assert.Equal(t, []int{4, 1, 2, 3}, result)
+	})
+
+	t.Run("prepend multiple elements", func(t *testing.T) {
+		s := []int{1, 2, 3}
+		result := pushFront(s, 4, 5, 6)
+		assert.Equal(t, []int{6, 5, 4, 1, 2, 3}, result)
+	})
+
+	t.Run("prepend nothing", func(t *testing.T) {
+		s := []int{1, 2, 3}
+		result := pushFront(s)
+		assert.Equal(t, []int{1, 2, 3}, result)
+	})
+
+	t.Run("strings", func(t *testing.T) {
+		s := []string{"a", "b", "c"}
+		result := pushFront(s, "d", "e", "f")
+		assert.Equal(t, []string{"f", "e", "d", "a", "b", "c"}, result)
+	})
+
+	t.Run("prepend two elements", func(t *testing.T) {
+		s := []int{10, 20}
+		result := pushFront(s, 1, 2)
+		assert.Equal(t, []int{2, 1, 10, 20}, result)
+	})
+
+	t.Run("single to single", func(t *testing.T) {
+		s := []int{42}
+		result := pushFront(s, 99)
+		assert.Equal(t, []int{99, 42}, result)
+	})
+
+	t.Run("side effect", func(t *testing.T) {
+		s := make([]int, 3, 10) // capacity is big enough.
+		s[0] = 1
+		s[1] = 2
+		s[2] = 3
+		result := pushFront(s, 4, 5)
+		assert.Equal(t, []int{5, 4, 1, 2, 3}, result)
+		// Original slice should be unchanged
+		assert.Equal(t, []int{5, 4, 1}, s)
+	})
+
+	t.Run("complex", func(t *testing.T) {
+		s := []int{}
+		s = pushFront(s, 1)
+		s = pushFront(s, 2, 3)
+		s = pushFront(s, 4, 5, 6)
+		s = pushFront(s, 7, 8, 9)
+		assert.Equal(t, []int{9, 8, 7, 6, 5, 4, 3, 2, 1}, s)
+	})
+}

@@ -18,7 +18,7 @@ func main() {
 	httpServer := NewHTTPModule(ctx)
 	httpServer.Start(d.FatalErrorsChannel()) // starts its own go routine
 
-	d.OnShutDown(
+	d.Defer(
 		httpServer.ShutDown,
 	)
 
