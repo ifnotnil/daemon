@@ -343,7 +343,7 @@ func TestMoveRight(t *testing.T) {
 		s := []int{}
 		result := moveRight(s, 3)
 		assert.Equal(t, []int{0, 0, 0}, result)
-		assert.Equal(t, 3, len(result))
+		assert.Len(t, result, 3)
 	})
 
 	t.Run("shift by zero", func(t *testing.T) {

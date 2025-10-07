@@ -276,6 +276,7 @@ type stdAPI interface {
 	OSExit(code int)
 }
 
+//nolint:ireturn
 func moveRight[S ~[]E, E any](s S, n int) S {
 	if n == 0 {
 		return s
