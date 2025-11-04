@@ -107,6 +107,7 @@ func Start(parentCTX context.Context, opts ...DaemonConfigOption) *Daemon {
 // OnShutDown appends the functions to be called on shutdown after the context gets cancelled.
 // The provided functions will be called using a non done context with a timeout configured using `WithShutdownGraceDuration`.
 // Shutdown callback functions will be called in the order they are registered (first in first out).
+//
 // Deprecated: Use Defer with reverse order instead.
 func (o *Daemon) OnShutDown(f ...func(context.Context)) {
 	o.onShutDownMutex.Lock()
