@@ -7,7 +7,7 @@ go 1.24.0
 
 require (
 	github.com/golangci/golangci-lint/v2 v2.8.0
-	github.com/vektra/mockery/v3 v3.6.1
+	github.com/vektra/mockery/v3 v3.6.3
 	golang.org/x/tools v0.41.0
 	honnef.co/go/tools v0.6.1
 	mvdan.cc/gofumpt v0.9.2
@@ -74,7 +74,7 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.6 // indirect
-	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
 	github.com/ghostiam/protogetter v0.3.18 // indirect
 	github.com/go-critic/go-critic v0.14.3 // indirect
