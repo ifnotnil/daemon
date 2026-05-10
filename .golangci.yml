@@ -21,6 +21,7 @@ linters:
   default: all
 
   disable:
+    - gomodguard # deprecated
     - cyclop
     - depguard
     - dupl

@@ -49,10 +49,11 @@ vet:
 
 ## <golangci-lint>
 # https://github.com/golangci/golangci-lint/releases
+# https://golangci-lint.run/docs/welcome/install/local/
 GOLANGCI-LINT_MOD:=github.com/golangci/golangci-lint/v2
 GOLANGCI-LINT_VER:=$(call go_mod_ver,$(GOLANGCI-LINT_MOD))
 $(TOOLS_BIN)/golangci-lint: $(TOOLS_DB)/golangci-lint.$(GOLANGCI-LINT_VER).$(GO_VER).ver
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI-LINT_VER)
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI-LINT_VER)
 
 .PHONY: golangci-lint
 golangci-lint: $(TOOLS_BIN)/golangci-lint
