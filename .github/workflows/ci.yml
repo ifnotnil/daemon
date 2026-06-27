@@ -54,7 +54,7 @@ jobs:
           ${{ steps.go_version.outputs.GOPATH }}
         key: ci-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/go.mod', '**/go.sum', '.github/workflows/ci.yml') }}
         restore-keys: |
-          ci-tools-${{ runner.os }}-${{ runner.arch }}-
+          ci-go-${{ runner.os }}-${{ runner.arch }}-
 
     - name: env
       run: |
