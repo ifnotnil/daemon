@@ -1,4 +1,5 @@
 [tools]
+go = "1.26.4"
 gojq = "0.12.19"
 golangci-lint = "2.12.2"
 mockery = "3.7.1"
