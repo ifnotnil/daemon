@@ -45,14 +45,14 @@ jobs:
 
 
     # https://github.com/actions/cache
-    - name: cache tools
-      id: cache-tools
+    - name: cache go deps
+      id: cache-go
       uses: actions/cache@v6
       with:
         path: |
           ${{ steps.go_version.outputs.GOCACHE }}
           ${{ steps.go_version.outputs.GOPATH }}
-        key: ci-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/go.mod', '**/go.sum', '.github/workflows/ci.yml') }}
+        key: ci-go-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/go.mod', '**/go.sum', '.github/workflows/ci.yml') }}
         restore-keys: |
           ci-go-${{ runner.os }}-${{ runner.arch }}-
 
