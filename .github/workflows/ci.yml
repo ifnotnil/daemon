@@ -35,11 +35,11 @@ jobs:
         echo "Detected Go version: ${GO_VER}"
         echo "GO_VER=${GO_VER}" >> "$GITHUB_OUTPUT"
 
-        GOCACHE=$(go env GOCACHE | cut -d. -f1-2)
+        GOCACHE=$(go env GOCACHE)
         echo "Detected GOCACHE: ${GOCACHE}"
         echo "GOCACHE=${GOCACHE}" >> "$GITHUB_OUTPUT"
 
-        GOPATH=$(go env GOPATH | cut -d. -f1-2)
+        GOPATH=$(go env GOPATH)
         echo "Detected GOPATH: ${GOPATH}"
         echo "GOPATH=${GOPATH}" >> "$GITHUB_OUTPUT"
 
