@@ -50,7 +50,7 @@ type mockstdAPI_OSExit_Call struct {
 
 // OSExit is a helper method to define mock.On call
 //   - code int
-func (_e *mockstdAPI_Expecter) OSExit(code interface{}) *mockstdAPI_OSExit_Call {
+func (_e *mockstdAPI_Expecter) OSExit(code any) *mockstdAPI_OSExit_Call {
 	return &mockstdAPI_OSExit_Call{Call: _e.mock.On("OSExit", code)}
 }
 
@@ -96,9 +96,9 @@ type mockstdAPI_SignalNotify_Call struct {
 // SignalNotify is a helper method to define mock.On call
 //   - c chan<- os.Signal
 //   - sig ...os.Signal
-func (_e *mockstdAPI_Expecter) SignalNotify(c interface{}, sig ...interface{}) *mockstdAPI_SignalNotify_Call {
+func (_e *mockstdAPI_Expecter) SignalNotify(c any, sig ...any) *mockstdAPI_SignalNotify_Call {
 	return &mockstdAPI_SignalNotify_Call{Call: _e.mock.On("SignalNotify",
-		append([]interface{}{c}, sig...)...)}
+		append([]any{c}, sig...)...)}
 }
 
 func (_c *mockstdAPI_SignalNotify_Call) Run(run func(c chan<- os.Signal, sig ...os.Signal)) *mockstdAPI_SignalNotify_Call {
@@ -144,7 +144,7 @@ type mockstdAPI_SignalStop_Call struct {
 
 // SignalStop is a helper method to define mock.On call
 //   - c chan<- os.Signal
-func (_e *mockstdAPI_Expecter) SignalStop(c interface{}) *mockstdAPI_SignalStop_Call {
+func (_e *mockstdAPI_Expecter) SignalStop(c any) *mockstdAPI_SignalStop_Call {
 	return &mockstdAPI_SignalStop_Call{Call: _e.mock.On("SignalStop", c)}
 }
 

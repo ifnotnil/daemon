@@ -5,9 +5,9 @@ GO_FOLDERS = go list -f '{{ .Dir }}' ./...
 GO_FILES = find . -type f -name '*.go'
 
 export GO111MODULE := on
-#export GOFLAGS := -mod=vendor
-#GOPATH := $(shell go env GOPATH)
-GO_VER := $(shell go env GOVERSION)
+# export GOFLAGS := -mod=vendor
+# GOPATH := $(shell go env GOPATH)
+# GO_VER := $(shell go env GOVERSION)
 
 .PHONY: mod
 mod:
