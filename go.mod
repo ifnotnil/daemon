@@ -10,5 +10,5 @@ require (
 
 require (
 	github.com/stretchr/objx v0.8.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 )
